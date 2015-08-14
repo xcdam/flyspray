@@ -16,9 +16,13 @@
      <?php if(isset($_GET['area']) and $_GET['area'] == 'resolution') echo $activeclass; ?>
      href="<?php echo Filters::noXSS(CreateURL('pm', 'resolution',        $proj->id)); ?>"><?php echo Filters::noXSS(L('resolutions')); ?></a>
      
+ <a id="projcatcustfieldlink"
+     <?php if(isset($_GET['area']) and $_GET['area'] == 'catcustfield') echo $activeclass; ?>
+     href="<?php echo Filters::noXSS(CreateURL('pm', 'catcustfield',        $proj->id)); ?>"><?php echo Filters::noXSS(L('categories')); ?></a>
+     
   <a id="globcustomsfieldslink"
     <?php if(isset($_GET['area']) and $_GET['area'] == 'customsfields') echo $activeclass; ?>
-     href="<?php echo Filters::noXSS(CreateURL('pm', 'customsfields',$proj->id)); ?>"><?php echo Filters::noXSS(L('customsfields') ); ?></a>      
+     href="<?php echo Filters::noXSS(CreateURL('pm', 'customsfields',$proj->id)); ?>"><?php echo Filters::noXSS(L('customsfields') ); ?></a> 
   <a id="globlistslink"
     <?php if(isset($_GET['area']) and $_GET['area'] == 'lists') echo $activeclass; ?>
      href="<?php echo Filters::noXSS(CreateURL('pm', 'lists',$proj->id)); ?>"><?php echo Filters::noXSS(L('addlists') ); ?></a> 

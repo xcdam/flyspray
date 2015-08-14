@@ -1230,9 +1230,7 @@ switch ($action = Req::val('action'))
 
         $_SESSION['SUCCESS'] = L('groupupdated');
         break;
-    // ##################
-    //add DC 06/07/2015
-    // (CUSTOMS FIELDS)
+
     // ##################
     // updating a list
     // ##################
@@ -1294,16 +1292,12 @@ switch ($action = Req::val('action'))
 
         $_SESSION['SUCCESS'] = L('listupdated');
         break;
-        
-    // ##################
-    // add DC 06/07/2015
-    // (CUSTOMS FIELDS)
+
     // ##################
     // adding a list item
     // ##################
     case 'pm.add_to_list':
     case 'admin.add_to_list':
-    	
         if (!$user->perms('manage_project') || !isset($list_table_name)) {
             break;
         }
@@ -1320,71 +1314,27 @@ switch ($action = Req::val('action'))
                                                    WHERE project_id = ?",
                                                  array($proj->id))));
         }
-        $type_of_listoflist      = Post::val('list_type');        //$type = "lists" OR "standard"
-        $level_lists_type        = Post::num('level_lists_type'); //1=>L('basic'),2=>L('versions'), 3=>L('category')
-        $l_id                    = Post::num('lists_id');         //value fields lists_id
+                  
+        //ADD (CUSTOMS FIELDS)
+        //DC 19/03/2015
+        $type     = Post::val('list_type');
+        $l_id     = Post::num('lists_id');
+        //echo "zzzz:type:$type:l_id:$l_id<br>";
+        if (($type == 'standard') && ($l_id !=0) )  {echo "OK SPECIAL INSERT INTO detaillists=>$type:lists_id=>$l_id";
+        $db->Query("INSERT INTO  $list_table_name
+                                 (project_id, $list_column_name,lists_id,list_position, show_in_list)
+                         VALUES  (?, ?, ?, ?, ?)",
+                array($proj->id, Post::val('list_name'), $l_id, $position, '1'));} 
+        else                                           {echo "OK STANDARD INSERT INTO=>$type"; //STANDARD LIST
+         $db->Query("INSERT INTO  $list_table_name
+                                 (project_id, $list_column_name,list_position, show_in_list)
+                         VALUES  (?, ?, ?, ?)",
+                array($proj->id, Post::val('list_name'), $position, '1'));}
         
-       switch($type_of_listoflist)// CASE  "lists" OR "standard"
-        {
-        	
-        	
-        	case 'lists': //1=>L('basic'),2=>L('versions'), 3=>L('category')
-        		$right                   = 0 ;//init
-        		echo "TYPE=>$type_of_listoflist:$level_lists_type:$l_id<br>";
-        		//#####################################################################################
-        		//INSERT flyspray_list_lists
-        		//CASE  CREATE NEW LIST
-        		//#####################################################################################
-        		$db->Query("INSERT INTO  $list_table_name (project_id, $list_column_name,lists_type,show_in_list,list_position)VALUES  (?, ?, ?, ?, ?)", array($proj->id, Post::val('list_name'),$level_lists_type,'1',$position ));
-        		             
-        		if ($level_lists_type == 3 )  //3=>L('category')
-        		{
-        			//INSERT INTO `flyspray_list_category` 
-        			//( project_id, list_id, category_name, show_in_list, category_owner, lft, rgt ) 
-        			//VALUES (32, NULL, 'root', 1, '0', NULL, 1)
-        			
-        			//#####################################################################################
-        			//Retrieve the value of last auto_increment of flyspray_list_lists ($list_column_name)#
-        			//#####################################################################################
-        			$get_auto_increment_lists = $db->Query('SELECT AUTO_INCREMENT
-        			FROM  INFORMATION_SCHEMA.TABLES
-        			WHERE TABLE_SCHEMA = ?
-        			AND   TABLE_NAME   = ?',array($conf['database']['dbname'], $conf['database']['dbprefix'].'list_lists'));
-        			
-        			if (!$db->CountRows($get_auto_increment_lists)) {
-        				break;
-        			}
-        			
-        			if ($get_details = $db->FetchRow($get_auto_increment_lists)) {	
-        				$szlist_id= $get_details['AUTO_INCREMENT'] - 1; //!!! -1
-        				//echo "szlist_id=>$szlist_id<br>";
-        			}
-        	
-        			//#####################################################################################
-        			//INSERT flyspray_list_category associated key list_id
-        			//#####################################################################################
-        			//CASE  CREATE NEW LIST CATEGORY
-        			$db->Query("INSERT INTO  {list_category}
-                                 ( project_id, list_id, category_name, show_in_list, category_owner, lft, rgt )
-                         VALUES  (?, ?, ?, 1, ?, ?, ?)",
-        					array($proj->id,$szlist_id ,'root',
-        						Post::val('category_owner', 0) == '' ? '0' : Flyspray::UserNameToId(Post::val('category_owner', 0)), $right, $right+1));
-        			
-        		}                           
-        		break;
-        	case 'standard':
-        		//CASE  CREATE NEW LIST STANDARD 
-        		echo "TYPE=>$type_of_listoflist:$level_list_type:$l_id<br>";
-        		if ($l_id !=0)  {$db->Query("INSERT INTO  $list_table_name (project_id, $list_column_name,lists_id,list_position, show_in_list) VALUES  (?, ?, ?, ?, ?)", array($proj->id, Post::val('list_name'), $l_id, $position, '1'));}
-        		break;
-        		
-        	default:
-        		echo "DEFAULT MODE TYPE=>$type_of_listoflist:$level_list_type:$l_id<br>";
-        		$db->Query("INSERT INTO  $list_table_name
-        				(project_id, $list_column_name,list_position, show_in_list)
-        				VALUES  (?, ?, ?, ?)",
-        				array($proj->id, Post::val('list_name'), $position, '1'));
-        }
+        
+       
+
+        
         
         $_SESSION['SUCCESS'] = L('listitemadded');
         break;
@@ -1478,21 +1428,12 @@ switch ($action = Req::val('action'))
                 if (!isset($listshow[$id])) {
                     $listshow[$id] = 0;
                 }
-                /*$update = $db->Query('UPDATE  {list_category}
+                $update = $db->Query('UPDATE  {list_category}
                                          SET  category_name = ?,
                                               show_in_list = ?, category_owner = ?,
                                               lft = ?, rgt = ?
                                        WHERE  category_id = ? AND project_id = ?',
                                   array($listname, intval($listshow[$id]), Flyspray::UserNameToId($listowners[$id]), intval($listlft[$id]), intval($listrgt[$id]), intval($id), $proj->id));
-                                  */
-                $update = $db->Query('UPDATE  {list_category}
-                 SET  category_name = ?,
-                 show_in_list = ?, category_owner = ?,
-                 lft = ?, rgt = ?
-                 WHERE  category_id = ?',
-                array($listname, intval($listshow[$id]), Flyspray::UserNameToId($listowners[$id]), intval($listlft[$id]), intval($listrgt[$id]), intval($id)));
-                
-                
                 // Correct visibility for sub categories
                 if ($listshow[$id] == 0) {
                     foreach ($listnames as $key => $value) {
@@ -1508,43 +1449,17 @@ switch ($action = Req::val('action'))
 
         if (is_array($listdelete) && count($listdelete)) {
             $deleteids = "$list_id = " . join(" OR $list_id =", array_map('intval', array_keys($listdelete)));
-            //$db->Query("DELETE FROM {list_category} WHERE project_id = ? AND ($deleteids)", array($proj->id));
-            $db->Query("DELETE FROM {list_category} WHERE ($deleteids)");
-            
+            $db->Query("DELETE FROM {list_category} WHERE project_id = ? AND ($deleteids)", array($proj->id));
         }
 
         $_SESSION['SUCCESS'] = L('listupdated');
         break;
-        
-    // ##################
-    // add DC 06/07/2015
-    // (CUSTOMS FIELDS) AD CATEGORY TABLE LIST_CATEGORY
+
     // ##################
     // adding a category list item
     // ##################
     case 'pm.add_category':
     case 'admin.add_category':
-    	/*
-    	 * 
-    	 * SELECT rgt FROM {list_category} WHERE category_id = ?
-    	 PREPARE mdb2_statement_mysql_853a808a7e0fcc126cc6c5456e090557c48a57d41 FROM 'SELECT rgt FROM flyspray_list_category WHERE category_id = ?'
-    	 EXECUTE mdb2_statement_mysql_853a808a7e0fcc126cc6c5456e090557c48a57d41 USING @0
-    	 DEALLOCATE PREPARE mdb2_statement_mysql_853a808a7e0fcc126cc6c5456e090557c48a57d41
-    	 UPDATE {list_category} lc LEFT JOIN {lists} l ON lc.list_id = l.list_id SET rgt=rgt+2 WHERE rgt >= ? AND project_id = ?
-    	 PREPARE mdb2_statement_mysql_923c237e20c8f962cd78cd05905bdf22f2aa23430 FROM 'UPDATE flyspray_list_category lc\n LEFT JOIN flyspray_lists l ON lc.list_id = l.list_id\n SET rgt=rgt+2\n WHERE rgt >= ? AND project_id = ?'
-    	 EXECUTE mdb2_statement_mysql_923c237e20c8f962cd78cd05905bdf22f2aa23430 USING @0, @1
-    	 DEALLOCATE PREPARE mdb2_statement_mysql_923c237e20c8f962cd78cd05905bdf22f2aa23430
-    	 UPDATE {list_category} lc LEFT JOIN {lists} l ON lc.list_id = l.list_id SET lft=lft+2 WHERE lft >= ? AND project_id = ?
-    	 PREPARE mdb2_statement_mysql_10ae5491501d22412146ecbad95182e7d10fe86675 FROM 'UPDATE flyspray_list_category lc\n LEFT JOIN flyspray_lists l ON lc.list_id = l.list_id\n SET lft=lft+2\n WHERE lft >= ? AND project_id = ?'
-    	 EXECUTE mdb2_statement_mysql_10ae5491501d22412146ecbad95182e7d10fe86675 USING @0, @1
-    	 */
-        
-    	$szparent_id       = Post::val('parent_id', -1);
-    
- 
-        //echo "débug=>$zsparent_id";
-        //echo "Post::val('lists_id')=>".Post::val('lists_id');
-    	
         if (!$user->perms('manage_project')) {
             break;
         }
@@ -1553,21 +1468,19 @@ switch ($action = Req::val('action'))
             Flyspray::show_error(L('fillallfields'));
             break;
         }
-        
-        //echo ":".Post::val('parent_id', -1) .":";
+
         // Get right value of last node
-        $right = $db->Query('SELECT rgt FROM {list_category} WHERE category_id = ?', array($szparent_id));
+        $right = $db->Query('SELECT rgt FROM {list_category} WHERE category_id = ?', array(Post::val('parent_id', -1)));
         $right = $db->FetchOne($right);
-        
-        $db->Query('UPDATE {list_category} SET rgt=rgt+2 WHERE rgt >= ? AND list_id = ?', array($right, Post::val('lists_id')));
-        $db->Query('UPDATE {list_category} SET lft=lft+2 WHERE lft >= ? AND list_id = ?', array($right, Post::val('lists_id')));
-        
+        $db->Query('UPDATE {list_category} SET rgt=rgt+2 WHERE rgt >= ? AND project_id = ?', array($right, $proj->id));
+        $db->Query('UPDATE {list_category} SET lft=lft+2 WHERE lft >= ? AND project_id = ?', array($right, $proj->id));
+
         $db->Query("INSERT INTO  {list_category}
-         (list_id, category_name, show_in_list, category_owner, lft, rgt )
-         VALUES  (?, ?, 1, ?, ?, ?)",
-         array(Post::val('lists_id'), Post::val('list_name'),
-        Post::val('category_owner', 0) == '' ? '0' : Flyspray::UserNameToId(Post::val('category_owner', 0)), $right, $right+1));
-        
+                                 ( project_id, category_name, show_in_list, category_owner, lft, rgt )
+                         VALUES  (?, ?, 1, ?, ?, ?)",
+                array($proj->id, Post::val('list_name'),
+                      Post::val('category_owner', 0) == '' ? '0' : Flyspray::UserNameToId(Post::val('category_owner', 0)), $right, $right+1));
+
         $_SESSION['SUCCESS'] = L('listitemadded');
         break;
 

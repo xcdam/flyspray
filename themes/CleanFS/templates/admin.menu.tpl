@@ -10,9 +10,6 @@
   <a id="globttlink"
      <?php if(isset($_GET['area']) and $_GET['area'] == 'tasktype') echo $activeclass; ?>
      href="<?php echo Filters::noXSS(CreateURL('admin', 'tasktype')); ?>"><?php echo Filters::noXSS(L('tasktypes') ); ?></a>
-  <a id="globtglink"
-     <?php if(isset($_GET['area']) and $_GET['area'] == 'tags') echo $activeclass; ?>
-     href="<?php echo Filters::noXSS(CreateURL('admin', 'tags')); ?>"><i class="fa fa-tag"></i> <?php echo Filters::noXSS(L('tags') ); ?></a>
   <a id="globstatuslink"
      <?php if(isset($_GET['area']) and $_GET['area'] == 'status') echo $activeclass; ?>
      href="<?php echo Filters::noXSS(CreateURL('admin', 'status')); ?>"><?php echo Filters::noXSS(L('taskstatuses') ); ?></a>
@@ -22,6 +19,9 @@
   <a id="globcatlink"
      <?php if(isset($_GET['area']) and $_GET['area'] == 'cat') echo $activeclass; ?>
      href="<?php echo Filters::noXSS(CreateURL('admin', 'cat')); ?>"><?php echo Filters::noXSS(L('categories') ); ?></a>
+  <a id="globlistslink"
+     <?php if(isset($_GET['area']) and $_GET['area'] == 'lists') echo $activeclass; ?>
+     href="<?php echo Filters::noXSS(CreateURL('admin', 'lists')); ?>"><?php echo Filters::noXSS(L('listes') ); ?></a>    
   <a id="globoslink"
      <?php if(isset($_GET['area']) and $_GET['area'] == 'os') echo $activeclass; ?>
      href="<?php echo Filters::noXSS(CreateURL('admin', 'os')); ?>"><?php echo Filters::noXSS(L('operatingsystems')); ?></a>
@@ -34,7 +34,4 @@
   <a id="userrequestlink"
      <?php if(isset($_GET['area']) and $_GET['area'] == 'userreqeust') echo $activeclass; ?>
      href="<?php echo Filters::noXSS(CreateURL('admin', 'userrequest')); ?>"><?php echo Filters::noXSS(L('pendingnewuserrequest')); ?></a>
-  <a id="translationslink"
-     <?php if(isset($_GET['area']) and $_GET['area'] == 'translations') echo $activeclass; ?>
-     href="<?php echo Filters::noXSS(CreateURL('admin', 'translations')); ?>"><?php echo Filters::noXSS(L('translations')); ?></a>
 </div>

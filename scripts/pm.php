@@ -12,6 +12,8 @@ if (!defined('IN_FS')) {
     die('Do not access this file directly.');
 }
 
+
+
 if (!$user->perms('manage_project') || !$proj->id) {
     Flyspray::show_error(16);
 }
@@ -29,8 +31,7 @@ switch ($area = Req::val('area', 'prefs')) {
 
     case 'prefs':
     case 'groups':
-      $page->assign('globalgroups', Flyspray::ListGroups(0)); # global user groups
-      $page->assign('groups', Flyspray::ListGroups($proj->id)); # project specific user groups
+        $page->assign('groups', Flyspray::ListGroups($proj->id));
     case 'editgroup':
         // yeah, utterly stupid, is changed in 1.0 already
         if (Req::val('area') == 'editgroup') {
@@ -42,14 +43,40 @@ switch ($area = Req::val('area', 'prefs')) {
             $page->uses('group_details');
         }
     case 'tasktype':
-    case 'tags':
     case 'resolution':
     case 'os':
     case 'version':
-    case 'cat':
+    //case 'cat': 
+   
     case 'status':
     case 'newgroup':
-
+    //ADD DC 03/07/2015
+    //(CUSTOM FIELDS)
+    case 'lists'        : //ADD LIST
+    case 'list'         : //SELECT ( CATEGORY LIST OR BASIC LIST)
+    case 'standard'     : //BASIC LIST
+    case 'catcustfield' : //CATEGORY LIST
+    case 'customsfields':
+    	//récupération de les variable POST et GET
+    	/*
+    	 if (count($_REQUEST) > 0)
+    	{
+    		// retrieve GET ou POST
+    		foreach($_REQUEST as $cle=>$valeur)
+    		{
+    			//@eval("\$".$cle." = '".$valeur."';");
+    			//  @eval("\$cle = \"$valeur\";");
+    			echo $cle.':'.$area.':'.$valeur.':<br>';
+    		}
+    	}
+    	*/
+    	//STORE IN SESSION
+    	//CASE FOR MENU ADD LISTS
+    	if ($area == 'list' )
+    	{
+    		$proj->SetInfosPAramSession();
+    	}
+    	
         $page->setTitle($fs->prefs['page_title'] . L('pmtoolbox'));
         $page->pushTpl('pm.menu.tpl');
         $page->pushTpl('pm.'.$area.'.tpl');
