@@ -1559,11 +1559,11 @@ switch ($action = Req::val('action'))
         $right = $db->Query('SELECT rgt FROM {list_category} WHERE category_id = ?', array($szparent_id));
         $right = $db->FetchOne($right);
         
-        $db->Query('UPDATE {list_category} SET rgt=rgt+2 WHERE rgt >= ? AND list_id = ?', array($right, Post::val('lists_id')));
-        $db->Query('UPDATE {list_category} SET lft=lft+2 WHERE lft >= ? AND list_id = ?', array($right, Post::val('lists_id')));
+        $db->Query('UPDATE {list_category} SET rgt=rgt+2 WHERE rgt >= ? AND lists_id = ?', array($right, Post::val('lists_id')));
+        $db->Query('UPDATE {list_category} SET lft=lft+2 WHERE lft >= ? AND lists_id = ?', array($right, Post::val('lists_id')));
         
         $db->Query("INSERT INTO  {list_category}
-         (list_id, category_name, show_in_list, category_owner, lft, rgt )
+         (lists_id, category_name, show_in_list, category_owner, lft, rgt )
          VALUES  (?, ?, 1, ?, ?, ?)",
          array(Post::val('lists_id'), Post::val('list_name'),
         Post::val('category_owner', 0) == '' ? '0' : Flyspray::UserNameToId(Post::val('category_owner', 0)), $right, $right+1));

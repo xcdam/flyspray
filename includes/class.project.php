@@ -454,7 +454,7 @@ class Project
     	//Start lft to 0
     	$result = $db->Query("SELECT lft, rgt
                                 FROM {list_category}
-                               WHERE category_name = 'root' AND lft = 0 AND list_id = ?",
+                               WHERE category_name = 'root' AND lft = 0 AND lists_id = ?",
     			array($list_id));
     	$row = $db->FetchRow($result);
     
@@ -464,7 +464,7 @@ class Project
     	$result = $db->Query('SELECT c.category_id, c.category_name, c.*, count(t.task_id) AS used_in_tasks
                                 FROM {list_category} c
                            LEFT JOIN {tasks} t ON (t.product_category = c.category_id)
-                               WHERE c.list_id = ? AND lft BETWEEN ? AND ?
+                               WHERE c.lists_id = ? AND lft BETWEEN ? AND ?
                             GROUP BY ' . $groupby . '
                             ORDER BY lft ASC',
     			array($list_id, intval($row['lft']), intval($row['rgt'])));
