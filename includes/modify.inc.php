@@ -1312,23 +1312,25 @@ switch ($action = Req::val('action'))
             Flyspray::show_error(L('fillallfields'));
             break;
         }
-
-        $position = Post::num('list_position');
-        if (!$position) {
-            $position = intval($db->FetchOne($db->Query("SELECT max(list_position)+1
-                                                    FROM $list_table_name
-                                                   WHERE project_id = ?",
-                                                 array($proj->id))));
-        }
+       
         $type_of_listoflist      = Post::val('list_type');        //$type = "lists" OR "standard"
         $level_lists_type        = Post::num('level_lists_type'); //1=>L('basic'),2=>L('versions'), 3=>L('category')
         $l_id                    = Post::num('lists_id');         //value fields lists_id
+        
         
        switch($type_of_listoflist)// CASE  "lists" OR "standard"
         {
         	
         	
         	case 'lists': //1=>L('basic'),2=>L('versions'), 3=>L('category')
+        		$position = Post::num('list_position');
+        		echo "LISTS position:$position<br>";
+        		if (!$position) {
+        			$position = intval($db->FetchOne($db->Query("SELECT max(list_position)+1
+        					FROM $list_table_name
+        					WHERE project_id = ?",
+        					array($proj->id))));
+        		}
         		$right                   = 0 ;//init
         		echo "TYPE=>$type_of_listoflist:$level_lists_type:$l_id<br>";
         		//#####################################################################################
@@ -1337,7 +1339,7 @@ switch ($action = Req::val('action'))
         		//#####################################################################################
         		$db->Query("INSERT INTO  $list_table_name (project_id, $list_column_name,lists_type,show_in_list,list_position)VALUES  (?, ?, ?, ?, ?)", array($proj->id, Post::val('list_name'),$level_lists_type,'1',$position ));
         		             
-        		if ($level_lists_type == 3 )  //3=>L('category')
+        		if ($level_lists_type == 3 )  //3=>L('category')MEN
         		{
         			//INSERT INTO `flyspray_list_category` 
         			//( project_id, list_id, category_name, show_in_list, category_owner, lft, rgt ) 
@@ -1373,11 +1375,30 @@ switch ($action = Req::val('action'))
         		}                           
         		break;
         	case 'standard':
+        		$position = Post::num('list_position');
+        		echo "STANDARD:$position<br>";
+        		if (!$position) {
+        			$position = intval($db->FetchOne($db->Query("SELECT max(list_position)+1
+        					FROM $list_table_name
+        					WHERE project_id = ?",
+        					array($proj->id))));
+        		}
         		//CASE  CREATE NEW LIST STANDARD 
         		echo "TYPE=>$type_of_listoflist:$level_list_type:$l_id<br>";
         		if ($l_id !=0)  {$db->Query("INSERT INTO  $list_table_name (project_id, $list_column_name,lists_id,list_position, show_in_list) VALUES  (?, ?, ?, ?, ?)", array($proj->id, Post::val('list_name'), $l_id, $position, '1'));}
         		break;
         		
+        		
+        	case 'affect':
+        		//CASE listsaffect : CREATE NEW AFFEC LIST
+        		 $l_list_available = Post::num('list_available'); //LISTS_ID SELECTED 
+        		//echo "MODE TYPE=>$type_of_listoflist:$l_list_available<br>";
+        		$db->Query("INSERT INTO  {list_$type_of_listoflist}
+        				(project_id, affect_name, affect_type, affect_version_tense, affect_default_value, affect_force_default, affect_value_required, lists_id)
+        				VALUES   (?, ?, ?, ?, ?, ?, ?, ?)",
+        				array($proj->id, Post::val('list_name'), 1,0,null,1,0,$l_list_available));
+        		
+        	break; 
         	default:
         		echo "DEFAULT MODE TYPE=>$type_of_listoflist:$level_list_type:$l_id<br>";
         		$db->Query("INSERT INTO  $list_table_name

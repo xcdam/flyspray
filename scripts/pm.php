@@ -56,7 +56,7 @@ switch ($area = Req::val('area', 'prefs')) {
     case 'list'         : //SELECT ( CATEGORY LIST OR BASIC LIST)
     case 'standard'     : //BASIC LIST
     case 'catcustfield' : //CATEGORY LIST
-    case 'customsfields':
+    case 'listsaffect'  : //LIST AFFECT
     	//récupération de les variable POST et GET
     	/*
     	 if (count($_REQUEST) > 0)

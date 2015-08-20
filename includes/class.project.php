@@ -247,74 +247,66 @@ class Project
     	
     }
     
-    //ASSIGMENT FIELDS 
-    // }}}do=pm&project=xx&area=customsfields
-    //listfields
-    //TABLE : flyspray_fields
+    //list_affect_lists 
+    // }}}do=pm&project=xx&area=listsaffect
+    //listsaffect
+    //TABLE : list_affect
     //add DC 08/2015
     //
-    function listfields ($project_id = null)
+    function list_affect_lists ($project_id = null)
     {
     	global $db;
     	$where = null;
-    	//Table flyspray_fields
-    	$result = $db->Query("SELECT  fields_id, fields_name, fields_type,
-    	version_tense,
-    	default_value,
-    	force_default,
-    	value_required,
-    	list_id
-    	FROM  {fields}
+    	$result = $db->Query("SELECT  affect_id, affect_name, affect_type,
+    	affect_version_tense,
+    	affect_default_value,
+    	affect_force_default,
+    	affect_value_required,
+    	lists_id
+    	FROM  {list_affect}
     	WHERE ( project_id = ?)
     	$where
-    	ORDER BY  fields_name",
+    	ORDER BY  affect_name",
     	array($project_id));
 
     	while ($row = $db->FetchRow($result)) 
     	{   
-    		$fields_type = $row['fields_type'];
-    		switch ($fields_type)
+    		$affect_type = $row['affect_type'];
+    		switch ($affect_type)
     		{
-    		
-    			case 1://CASE fields_type 1=>L('list')
-    				$result1 = $db->Query("SELECT  fields_id, fields_name, fields_type,
-    						version_tense,
-    						default_value,
-    						force_default,
-    						value_required,
-    						{fields}.list_id,
+    	    	 case 1://CASE affect_typee 1=>L('list')
+    				$result1 = $db->Query("SELECT  affect_id, affect_name, affect_type,
+    						affect_version_tense,
+    						affect_default_value,
+    						affect_force_default,
+    						affect_value_required,
+    						{list_affect}.lists_id,
     						l.lists_name, 
     						l.lists_type, 
     						l.show_in_list
-    						FROM  {fields}
-    						LEFT JOIN flyspray_list_lists l ON {fields}.list_id = l.lists_id
-    						WHERE      {fields}.list_id    = ?
-    						AND      ( {fields}.project_id = ? )
+    						FROM  {list_affect}
+    						LEFT JOIN {list_lists} l ON {list_affect}.lists_id = l.lists_id
+    						WHERE      {list_affect}.lists_id    = ?
+    						AND      ( {list_affect}.project_id = ? )
     						AND             l.show_in_list = 1
     						$where
-    						ORDER BY  {fields}.fields_name",
-    						array($row['list_id'],$project_id));    						 
-    						/*
-    						*
-    						*
-    						*FROM  `flyspray_fields` f
-    						 INNER JOIN flyspray_list_category lc ON f.list_id = lc.list_id
-    						 WHERE f.`list_id` =51
-    						 */
-    						  
+    						ORDER BY  {list_affect}.affect_name",
+    						array($row['lists_id'],$project_id));    						 
+    						
+
     						$row1 = $db->FetchRow($result1);
   
-    					    //print_r($row1).'<br>';
+    					    print_r($row1).'<br>';
     						$restab[] = $row1;
     						break;
     						
-    						case 2://CASE fields_type 2=>L('date')
+    						case 2://CASE  2=>L('date')
     						break;
     						
-    						case 3://CASE fields_type 3=>L('text')
+    						case 3://CASE  3=>L('text')
     					    break;
     					    
-    					    case 4://CASE fields_type 4=>L('user')
+    					    case 4://CASE  4=>L('user')
     					    break;
     					    
     						default:
@@ -324,7 +316,7 @@ class Project
     //exit;	
     	//return $db->cached_query('fields', $this->detail_list_sql('fields'), array($this->id ));
     //$groupby = $db->GetColumnNames('{list_lists}', 'c.project_id', 'c.');
-     //echo "fields_type == $fields_type<br>";
+  
     // print_r($restab);
     return $restab;
     }
@@ -500,76 +492,7 @@ class Project
         //print_r($cats[0]);
     	return array_merge($cats, $g_cats);
     }
-    /*
-   function listCategories($project_id = null, $hide_hidden = true, $remove_root = true, $depth = true)
 
-    //function listCategories($project_id = null, $list_id = null,$hide_hidden = true, $remove_root = true, $depth = true)
-    {
-        global $db, $conf;
-
-        // start with a empty arrays
-        $right = array();
-        $cats = array();
-        $g_cats = array();
-
-        // null = categories of current project + global project, int = categories of specific project
-        if (is_null($project_id)) {
-            $project_id = $this->id;
-            if ($this->id != 0) {
-                $g_cats = $this->listCategories(0);
-            }
-        }
-
-        // retrieve the left and right value of the root node
-        $result = $db->Query("SELECT lft, rgt
-                                FROM {list_category}
-                               WHERE category_name = 'root' AND lft = 1 AND project_id = ? AND list_id = ?",
-                             array($project_id),array($list_id));
-        $row = $db->FetchRow($result);
-
-        $groupby = $db->GetColumnNames('{list_category}', 'c.category_id', 'c.');
-
-        // now, retrieve all descendants of the root node
-        $result = $db->Query('SELECT c.category_id, c.category_name, c.*, count(t.task_id) AS used_in_tasks
-                                FROM {list_category} c
-                           LEFT JOIN {tasks} t ON (t.product_category = c.category_id)
-                               WHERE c.project_id = ? AND lft BETWEEN ? AND ?
-                            GROUP BY ' . $groupby . '
-                            ORDER BY lft ASC',
-                             array($project_id, intval($row['lft']), intval($row['rgt'])));
-
-        while ($row = $db->FetchRow($result)) {
-            if ($hide_hidden && !$row['show_in_list'] && $row['lft'] != 1) {
-                continue;
-            }
-
-           // check if we should remove a node from the stack
-           while (count($right) > 0 && $right[count($right)-1] < $row['rgt']) {
-               array_pop($right);
-           }
-           $cats[] = $row + array('depth' => count($right)-1);
-
-           // add this node to the stack
-           $right[] = $row['rgt'];
-        }
-
-        // Adjust output for select boxes
-        if ($depth) {
-            foreach ($cats as $key => $cat) {
-                if ($cat['depth'] > 0) {
-                    $cats[$key]['category_name'] = str_repeat('...', $cat['depth']) . $cat['category_name'];
-                    $cats[$key]['1'] = str_repeat('...', $cat['depth']) . $cat['1'];
-                }
-            }
-        }
-
-        if ($remove_root) {
-            unset($cats[0]);
-        }
-
-        return array_merge($cats, $g_cats);
-    }
-*/
     function listResolutions($pm = false)
     {
         global $db;

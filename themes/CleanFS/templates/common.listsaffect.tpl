@@ -1,14 +1,13 @@
 <!-- add DC 08/2015 A MODIFIER-->
 <?php
-## TRANSFORM array $rowslistsavble in ARRAY INDEX with KEY lists_name
+## TRANSFORM array $rowslistsavble in ARRAY INDEX )
 if (count($rowslistsavble)):
 $countlines = -1;
 foreach ($rowslistsavble as $rx):
 $countlines++;
-$listsavble[] = $rx['lists_name'];
+$listsavble[$rx['lists_id']] = $rx['lists_name'];
 endforeach;
 endif;
-
 if (count($rows)):
 //echo "nb rows:".count($rows).'Liste list_type='.$list_type.'<br>';
 //print_r($rows);
@@ -35,7 +34,7 @@ if (count($rows)):
     foreach ($rows as $row):
     $countlines++;
     //list_type[{$list['list_id']}]
-    // var_dump($row);
+    // print_r($rows);
     //echo $countlines .':'.$list_type.'_name'.':'.$row[$list_type.'_name'].'<br>';
    // echo $countlines .':'.$list_type.'_type'.':'.$row[$list_type.'_type'].'<br>';
    // echo $countlines .':default_value:'.$row['default_value']  .'<br>';
@@ -137,19 +136,16 @@ if (count($rows)):
         <input id="listnamenew" class="text" type="text" size="15" maxlength="40" value="<?php echo Filters::noXSS(Req::val('list_name')); ?>" name="list_name" />
       </td>
       <!-- add on DC -->
-      <?php if ($list_type == 'lists'): ?>
-      <td title="<?php echo Filters::noXSS(L('listtensetip')); ?>">
-        <select id="tensenew" name="<?php echo Filters::noXSS($list_type); ?>_tense">
-          <?php echo tpl_options(array(1=>L('Basic'), 3=>L('Category')), 1); ?>
-
+      <td title="<?php echo Filters::noXSS(L('listcatlisttype')); ?>">
+       <select id="listcatlisttypenew" name="list_catlisttype">
+          <?php echo tpl_options(array(1=>L('list'), 2=>L('date'), 3=>L('text')),1); ?>
         </select>
       </td>
-      <?php endif; ?>
-      <td>
-        <input id="listpositionnew" class="text" type="text" size="3" maxlength="3" value="<?php echo Filters::noXSS(Req::val('list_position')); ?>" name="list_position" />
-      </td>
-      <td>
-        <input id="showinlistnew" type="checkbox" name="show_in_list" checked="checked" disabled="disabled" />
+      <td title="<?php echo Filters::noXSS(L('listavailable')); ?>">
+        <select id="listavailablenew" name="list_available">
+          <!-- TO DO VALEUR LISTS_ID A RECUPERER !!!!!!!!!!!!! -->
+          <?php echo tpl_options($listsavble,null); ?>
+        </select>
       </td>
       <td class="buttons">
         <input type="hidden" name="project" value="<?php echo Filters::noXSS($proj->id); ?>" />
